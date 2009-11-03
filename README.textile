@@ -1,0 +1,50 @@
+h1. Datetime Deltas for Thinking Sphinx
+
+h2. Installation
+
+You'll need Thinking Sphinx 1.3.0 or later.
+
+<pre><code>gem install ts-datetime-delta --source http://gemcutter.org</code></pre>
+
+In your @environment.rb@ file, with the rest of your gem dependencies:
+
+<pre><code>config.gem 'ts-datetime-delta',
+  :lib     => 'thinking_sphinx/deltas/datetime_delta'
+  :version => '>= 1.0.0',
+  :source  => 'http://gemcutter.org'</code></pre>
+
+And add the following line to the bottom of your @Rakefile@:
+
+<pre><code>require 'thinking_sphinx/deltas/datetime_delta/tasks'</code></pre>
+
+h2. Usage
+
+For the indexes you want to use this delta approach, make sure you set that up in their @define_index@ blocks.
+
+<pre><code>define_index do
+  # ...
+  
+  set_property :delta => :datetime
+end</code></pre>
+
+If you want to use a column other than @updated_at@, you can specify it using the @:delta_column@ option. The same goes for the threshold, which defaults to one day.
+
+<pre><code>set_property :delta => :datetime,
+  :threshold    => 1.hour,
+  :delta_column => :changed_at</code></pre>
+
+Then, while your Rails application is running, you'll need to run the delta indexing rake task regularly - as often as your threshold, allowing for some time for the indexing to actually happen.
+
+For example, if you're going to run the delta indexing task every hour, I would recommend setting your threshold to 70 minutes.
+
+To ensure this rake task is called regularly, it's best to set it up as a recurring task via cron or similar tools.
+
+<pre><code>rake thinking_sphinx:index:delta</code></pre>
+
+The shorthand version is:
+
+<pre><code>rake ts:in:delta</code></pre>
+
+h2. Copyright
+
+Copyright (c) 2009 Pat Allan, and released under an MIT Licence.

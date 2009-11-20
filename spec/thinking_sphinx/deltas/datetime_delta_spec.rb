@@ -33,9 +33,17 @@ describe ThinkingSphinx::Deltas::DatetimeDelta do
   
   describe '#delayed_index' do
     before :each do
-      @model = stub('foo')
-      @model.stub!(:name => 'foo')
-      @model.stub!(:source_of_sphinx_index => @model)
+      @index = stub('index',
+        :delta?     => true,
+        :core_name  => 'foo_core',
+        :delta_name => 'foo_delta'
+      )
+      @model = stub('foo',
+        :name                   => 'foo',
+        :source_of_sphinx_index => @model,
+        :delta_index_names      => ['foo_delta'],
+        :sphinx_indexes         => [@index]
+      )
       
       ThinkingSphinx.suppress_delta_output = false
       

@@ -11,6 +11,8 @@ Jeweler::Tasks.new do |gem|
   gem.homepage    = "http://github.com/freelancing-god/ts-datetime-delta"
   gem.authors     = ["Pat Allan"]
   
+  gem.add_dependency 'thinking-sphinx', '>= 1.3.6'
+  
   gem.add_development_dependency "rspec",    ">= 1.2.9"
   gem.add_development_dependency "yard",     ">= 0"
   gem.add_development_dependency "cucumber", ">= 0"

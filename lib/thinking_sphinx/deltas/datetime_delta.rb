@@ -62,8 +62,11 @@ class ThinkingSphinx::Deltas::DatetimeDelta < ThinkingSphinx::Deltas::DefaultDel
     config = ThinkingSphinx::Configuration.instance
     rotate = ThinkingSphinx.sphinx_running? ? " --rotate" : ""
     
-    output = `#{config.bin_path}#{config.indexer_binary_name} --config #{config.config_file}#{rotate} #{delta_index_name model}`
-    output += `#{config.bin_path}#{config.indexer_binary_name} --config #{config.config_file}#{rotate} --merge #{core_index_name model} #{delta_index_name model} --merge-dst-range sphinx_deleted 0 0`
+    output = `#{config.bin_path}#{config.indexer_binary_name} --config #{config.config_file}#{rotate} #{model.delta_index_names.join(' ')}`
+    
+    model.sphinx_indexes.select(&:delta?).each do |index|
+      output += `#{config.bin_path}#{config.indexer_binary_name} --config #{config.config_file}#{rotate} --merge #{index.core_name} #{index.delta_name} --merge-dst-range sphinx_deleted 0 0`
+    end
     puts output unless ThinkingSphinx.suppress_delta_output?
     
     true

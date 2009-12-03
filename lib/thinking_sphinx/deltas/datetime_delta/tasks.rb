@@ -2,10 +2,13 @@ namespace :thinking_sphinx do
   namespace :index do
     desc "Index Thinking Sphinx datetime delta indexes"
     task :delta => :app_env do
-      ThinkingSphinx.indexed_models.select { |model|
-        model.constantize.sphinx_indexes.any? { |index| index.delta? }
+      ThinkingSphinx.context.indexed_models.collect { |model|
+        model.constantize
+      }.select { |model|
+        model.define_indexes
+        model.delta_indexed_by_sphinx?
       }.each do |model|
-        model.constantize.sphinx_indexes.select { |index|
+        model.sphinx_indexes.select { |index|
           index.delta? && index.delta_object.respond_to?(:delayed_index)
         }.each { |index|
           index.delta_object.delayed_index(index.model)

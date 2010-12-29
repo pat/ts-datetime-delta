@@ -11,6 +11,21 @@
 class ThinkingSphinx::Deltas::DatetimeDelta < ThinkingSphinx::Deltas::DefaultDelta
   attr_accessor :column, :threshold
   
+  def self.index
+    ThinkingSphinx.context.indexed_models.collect { |model|
+      model.constantize
+    }.select { |model|
+      model.define_indexes
+      model.delta_indexed_by_sphinx?
+    }.each do |model|
+      model.sphinx_indexes.select { |index|
+        index.delta? && index.delta_object.respond_to?(:delayed_index)
+      }.each { |index|
+        index.delta_object.delayed_index(index.model)
+      }
+    end
+  end
+  
   # Initialises the Delta object for the given index and settings. All handled
   # by Thinking Sphinx, so you shouldn't need to call this method yourself in
   # general day-to-day situations.

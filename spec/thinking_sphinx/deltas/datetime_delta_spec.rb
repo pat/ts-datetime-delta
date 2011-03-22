@@ -32,6 +32,8 @@ describe ThinkingSphinx::Deltas::DatetimeDelta do
   end
   
   describe '#delayed_index' do
+    let(:root) { File.expand_path File.dirname(__FILE__) + '/../../..' }
+    
     before :each do
       @index = stub('index',
         :delta?     => true,
@@ -53,13 +55,13 @@ describe ThinkingSphinx::Deltas::DatetimeDelta do
     
     it "should process the delta index for the given model" do
       @datetime_delta.should_receive(:`).
-        with('indexer --config /config/development.sphinx.conf foo_delta')
+        with("indexer --config #{root}/config/development.sphinx.conf foo_delta")
       
       @datetime_delta.delayed_index(@model)
     end
     
     it "should merge the core and delta indexes for the given model" do
-      @datetime_delta.should_receive(:`).with('indexer --config /config/development.sphinx.conf --merge foo_core foo_delta --merge-dst-range sphinx_deleted 0 0')
+      @datetime_delta.should_receive(:`).with("indexer --config #{root}/config/development.sphinx.conf --merge foo_core foo_delta --merge-dst-range sphinx_deleted 0 0")
       
       @datetime_delta.delayed_index(@model)
     end

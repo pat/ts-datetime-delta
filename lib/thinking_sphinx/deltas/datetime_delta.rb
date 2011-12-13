@@ -79,8 +79,10 @@ class ThinkingSphinx::Deltas::DatetimeDelta < ThinkingSphinx::Deltas::DefaultDel
     
     output = `#{config.bin_path}#{config.indexer_binary_name} --config #{config.config_file}#{rotate} #{model.delta_index_names.join(' ')}`
     
-    model.sphinx_indexes.select(&:delta?).each do |index|
-      output += `#{config.bin_path}#{config.indexer_binary_name} --config #{config.config_file}#{rotate} --merge #{index.core_name} #{index.delta_name} --merge-dst-range sphinx_deleted 0 0`
+    unless ENV['DISABLE_MERGE']
+      model.sphinx_indexes.select(&:delta?).each do |index|
+        output += `#{config.bin_path}#{config.indexer_binary_name} --config #{config.config_file}#{rotate} --merge #{index.core_name} #{index.delta_name} --merge-dst-range sphinx_deleted 0 0`
+      end
     end
     puts output unless ThinkingSphinx.suppress_delta_output?
     

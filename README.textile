@@ -23,7 +23,7 @@ For the indexes you want to use this delta approach, make sure you set that up i
 
 <pre><code>define_index do
   # ...
-  
+
   set_property :delta => :datetime
 end</code></pre>
 
@@ -44,6 +44,10 @@ To ensure this rake task is called regularly, it's best to set it up as a recurr
 The shorthand version is:
 
 <pre><code>rake ts:in:delta</code></pre>
+
+h2. Contributors
+
+* "W. Andrew Loe III":http://andrewloe.com/ - Environment variable for disabling merging.
 
 h2. Copyright
 

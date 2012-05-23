@@ -107,7 +107,7 @@ class ThinkingSphinx::Deltas::DatetimeDelta < ThinkingSphinx::Deltas::DefaultDel
   # @return [Boolean] True if within the threshold window, otherwise false.
   #
   def toggled(instance)
-    instance.send(@column) > @threshold.ago
+    (timestamp = instance.send(@column)) ? timestamp > @threshold.ago : false
   end
 
   # Returns the SQL query that resets the model data after a normal index. For

@@ -48,7 +48,8 @@ The shorthand version is:
 h2. Contributors
 
 * "W. Andrew Loe III":http://andrewloe.com/ - Environment variable for disabling merging.
+* "Kirill Maximov":http://kirblog.idetalk.com - Handling nil timestamp column values for toggled checks.
 
 h2. Copyright
 
-Copyright (c) 2009 Pat Allan, and released under an MIT Licence.
+Copyright (c) 2009-2012 Pat Allan, and released under an MIT Licence.

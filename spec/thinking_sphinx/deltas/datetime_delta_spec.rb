@@ -109,6 +109,13 @@ describe ThinkingSphinx::Deltas::DatetimeDelta do
       
       @datetime_delta.toggled(instance).should be_false
     end
+
+    it "should return false if the column value is null" do
+      instance = stub('instance', :updated_at => nil)
+      @datetime_delta.threshold = 20.minutes
+
+      @datetime_delta.toggled(instance).should be_false
+    end
   end
   
   describe '#reset_query' do

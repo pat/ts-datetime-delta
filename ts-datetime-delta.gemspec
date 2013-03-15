@@ -22,7 +22,7 @@ Gem::Specification.new do |s|
     "lib/thinking_sphinx/deltas/datetime_delta.rb",
     "lib/thinking_sphinx/deltas/datetime_delta/tasks.rb"
   ]
-  s.homepage = "http://github.com/freelancing-god/ts-datetime-delta"
+  s.homepage = "https://github.com/pat/ts-datetime-delta"
   s.require_paths = ["lib"]
   s.rubygems_version = "1.8.16"
   s.summary = "Thinking Sphinx - Datetime Deltas"

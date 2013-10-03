@@ -97,7 +97,7 @@ class ThinkingSphinx::Deltas::DatetimeDelta < ThinkingSphinx::Deltas::DefaultDel
   # @return [Boolean] True if within the threshold window, otherwise false.
   #
   def toggled?(instance)
-    res = instance.send(@column)
+    res = instance.send(column)
     res && (res > threshold.ago)
   end
 
@@ -114,10 +114,10 @@ class ThinkingSphinx::Deltas::DatetimeDelta < ThinkingSphinx::Deltas::DefaultDel
   def clause(delta_source = false)
     if (delta_source)
       if (adapter.respond_to?(:time_difference))
-        "#{adapter.quoted_table_name}.#{adapter.quote @column.to_s} > #{adapter.time_difference(threshold)}"
+        "#{adapter.quoted_table_name}.#{adapter.quote column.to_s} > #{adapter.time_difference(threshold)}"
       else
         # Workaround - remove when adapter gets updated
-        "#{adapter.quoted_table_name}.#{adapter.quote @column.to_s} > DATE_SUB(NOW(), INTERVAL #{threshold} SECOND)"
+        "#{adapter.quoted_table_name}.#{adapter.quote column.to_s} > DATE_SUB(NOW(), INTERVAL #{threshold} SECOND)"
       end
     else
       nil

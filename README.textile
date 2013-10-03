@@ -4,16 +4,20 @@ h2. Installation
 
 You'll need Thinking Sphinx 1.3.0 or later.
 
-<pre><code>gem install ts-datetime-delta --source http://gemcutter.org</code></pre>
+<pre><code>gem install ts-datetime-delta</code></pre>
 
-In your @environment.rb@ file, with the rest of your gem dependencies:
+In your Gemfile, you can use it like so:
+
+<pre><code>gem 'ts-datetime-delta', '~> 1.0.2',
+  :require => 'thinking_sphinx/deltas/datetime_delta'</code></pre>
+
+Or if you're still on Rails 2, then put this in your @environment.rb@ file with the rest of your gem dependencies:
 
 <pre><code>config.gem 'ts-datetime-delta',
   :lib     => 'thinking_sphinx/deltas/datetime_delta'
-  :version => '>= 1.0.0',
-  :source  => 'http://gemcutter.org'</code></pre>
+  :version => '>= 1.0.0'</code></pre>
 
-And add the following line to the bottom of your @Rakefile@:
+No matter which version of Rails, you'll need to add the following line to the bottom of your @Rakefile@:
 
 <pre><code>require 'thinking_sphinx/deltas/datetime_delta/tasks'</code></pre>
 
@@ -48,7 +52,8 @@ The shorthand version is:
 h2. Contributors
 
 * "W. Andrew Loe III":http://andrewloe.com/ - Environment variable for disabling merging.
+* "Kirill Maximov":http://kirblog.idetalk.com - Handling nil timestamp column values for toggled checks.
 
 h2. Copyright
 
-Copyright (c) 2009 Pat Allan, and released under an MIT Licence.
+Copyright (c) 2009-2012 Pat Allan, and released under an MIT Licence.

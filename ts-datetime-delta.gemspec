@@ -5,11 +5,11 @@
 
 Gem::Specification.new do |s|
   s.name = "ts-datetime-delta"
-  s.version = "1.0.2"
+  s.version = "1.0.3"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Pat Allan"]
-  s.date = "2011-12-24"
+  s.date = "2012-06-11"
   s.description = "Manage delta indexes via datetime columns for Thinking Sphinx"
   s.email = "pat@freelancing-gods.com"
   s.extra_rdoc_files = [
@@ -22,9 +22,9 @@ Gem::Specification.new do |s|
     "lib/thinking_sphinx/deltas/datetime_delta.rb",
     "lib/thinking_sphinx/deltas/datetime_delta/tasks.rb"
   ]
-  s.homepage = "http://github.com/freelancing-god/ts-datetime-delta"
+  s.homepage = "https://github.com/pat/ts-datetime-delta"
   s.require_paths = ["lib"]
-  s.rubygems_version = "1.8.10"
+  s.rubygems_version = "1.8.16"
   s.summary = "Thinking Sphinx - Datetime Deltas"
   s.test_files = ["features/step_definitions/common_steps.rb", "features/step_definitions/datetime_delta_steps.rb", "features/support/db/fixtures/thetas.rb", "features/support/db/migrations/create_thetas.rb", "features/support/env.rb", "features/support/models/theta.rb", "features/datetime_deltas.feature", "features/support/database.example.yml", "spec/spec.opts", "spec/spec_helper.rb", "spec/thinking_sphinx", "spec/thinking_sphinx/deltas", "spec/thinking_sphinx/deltas/datetime_delta_spec.rb"]
 

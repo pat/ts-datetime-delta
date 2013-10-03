@@ -9,8 +9,7 @@
 # @see http://ts.freelancing-gods.com Thinking Sphinx
 #
 class ThinkingSphinx::Deltas::DatetimeDelta < ThinkingSphinx::Deltas::DefaultDelta
-  attr_accessor :column, :threshold
-  attr_reader :adapter
+  attr_reader :adapter, :options
 
   def self.index
     configuration = ThinkingSphinx::Configuration.instance
@@ -32,8 +31,15 @@ class ThinkingSphinx::Deltas::DatetimeDelta < ThinkingSphinx::Deltas::DefaultDel
   #
   def initialize(adapter, options = {})
     @adapter    = adapter
-    @column     = options.delete(:delta_column) || :updated_at
-    @threshold  = options.delete(:threshold)    || 1.day
+    @options    = options
+  end
+
+  def column
+    options[:column] || :updated_at
+  end
+
+  def threshold
+    options[:threshold] || 1.day
   end
 
   # Does absolutely nothing, beyond returning true. Thinking Sphinx expects
@@ -41,12 +47,6 @@ class ThinkingSphinx::Deltas::DatetimeDelta < ThinkingSphinx::Deltas::DefaultDel
   # DefaultDelta.
   #
   # All the real indexing logic is done by the delayed_index method.
-  #
-  # @param [Class] model the ActiveRecord model to index.
-  # @param [ActiveRecord::Base] instance the instance of the given model that
-  #   has changed. Optional.
-  # @return [Boolean] true
-  # @see #delayed_index
   #
   def index(index)
     # do nothing
@@ -62,7 +62,6 @@ class ThinkingSphinx::Deltas::DatetimeDelta < ThinkingSphinx::Deltas::DefaultDel
   # @return [Boolean] true
   #
   def delayed_index(delta_index)
-    STDERR.puts "@tjv DEBUG: delayed_index called for #{delta_index.inspect}"
     config = ThinkingSphinx::Configuration.instance
     controller = config.controller
     output = controller.index(delta_index.name)
@@ -99,13 +98,12 @@ class ThinkingSphinx::Deltas::DatetimeDelta < ThinkingSphinx::Deltas::DefaultDel
   #
   def toggled?(instance)
     res = instance.send(@column)
-    res && (res > @threshold.ago)
+    res && (res > threshold.ago)
   end
 
   # Returns the SQL query that resets the model data after a normal index. For
   # datetime deltas, nothing needs to be done, so this method returns nil.
   #
-  # @param [Class] model The ActiveRecord model that is requesting the query
   # @return [NilClass] Always nil
   #
   def reset_query
@@ -116,10 +114,10 @@ class ThinkingSphinx::Deltas::DatetimeDelta < ThinkingSphinx::Deltas::DefaultDel
   def clause(delta_source = false)
     if (delta_source)
       if (adapter.respond_to?(:time_difference))
-        "#{adapter.quoted_table_name}.#{adapter.quote @column.to_s} > #{adapter.time_difference(@threshold)}"
+        "#{adapter.quoted_table_name}.#{adapter.quote @column.to_s} > #{adapter.time_difference(threshold)}"
       else
         # Workaround - remove when adapter gets updated
-        "#{adapter.quoted_table_name}.#{adapter.quote @column.to_s} > DATE_SUB(NOW(), INTERVAL #{@threshold} SECOND)"
+        "#{adapter.quoted_table_name}.#{adapter.quote @column.to_s} > DATE_SUB(NOW(), INTERVAL #{threshold} SECOND)"
       end
     else
       nil

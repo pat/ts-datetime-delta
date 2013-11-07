@@ -92,6 +92,7 @@ class ThinkingSphinx::Deltas::DatetimeDelta < ThinkingSphinx::Deltas::DefaultDel
       delta_index = arg
       controller = config.controller
       output = controller.index(delta_index.name)
+      output = "" unless output.is_a?(String) # Riddle::Controller.index may return true, false, nil or String, depending on its options[:verbose] value
       rotate = (controller.running? ? ' --rotate' : '')
 
       unless(ENV['DISABLE_MERGE'] == 'true')

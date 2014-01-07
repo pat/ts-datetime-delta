@@ -10,42 +10,49 @@
 #
 class ThinkingSphinx::Deltas::DatetimeDelta < ThinkingSphinx::Deltas::DefaultDelta
   attr_accessor :column, :threshold
+  attr_reader :adapter
 
   def self.index
-    ThinkingSphinx.context.indexed_models.collect { |model|
-      model.constantize
-    }.select { |model|
-      model.define_indexes
-      model.delta_indexed_by_sphinx?
-    }.each do |model|
-      model.sphinx_indexes.select { |index|
-        index.delta? && index.delta_object.respond_to?(:delayed_index)
-      }.each { |index|
-        index.delta_object.delayed_index(index.model)
-      }
+    if ThinkingSphinx.respond_to?(:context) # Thinking Sphinx v2
+      ThinkingSphinx.context.indexed_models.collect { |model|
+        model.constantize
+      }.select { |model|
+        model.define_indexes
+        model.delta_indexed_by_sphinx?
+      }.each do |model|
+        model.sphinx_indexes.select { |index|
+          index.delta? && index.delta_object.respond_to?(:delayed_index)
+        }.each { |index|
+          index.delta_object.delayed_index(index.model)
+        }
+      end
+    else # Thinking Sphinx v3
+      configuration = ThinkingSphinx::Configuration.instance
+      configuration.preload_indices
+      configuration.indices.each do |index|
+        if (index.delta?)
+          if (index.delta_processor.respond_to?(:delayed_index))
+            index.delta_processor.delayed_index(index)
+          end
+        end
+      end
     end
   end
 
   # Initialises the Delta object for the given index and settings. All handled
   # by Thinking Sphinx, so you shouldn't need to call this method yourself in
   # general day-to-day situations.
-  #
-  # @example
-  #   ThinkingSphinx::Deltas::DatetimeDelta.new index,
-  #     :delta_column => :updated_at,
-  #     :threshold    => 1.day
-  #
-  # @param [ThinkingSphinx::Index] index the index using this delta object
-  # @param [Hash] options a hash of options for the index
-  # @option options [Symbol] :delta_column (:updated_at) The column to use for
-  #   tracking when a record has changed. Default to :updated_at.
-  # @option options [Integer] :threshold (1.day) The window of time to store
-  #   changes for, in seconds. Defaults to one day.
-  #
-  def initialize(index, options = {})
-    @index      = index
-    @column     = options.delete(:delta_column) || :updated_at
-    @threshold  = options.delete(:threshold)    || 1.day
+  # @param arg Depending on the version of Thinking Sphinx
+  #   For TS v2: the index
+  #   For TS v3: the database adapter
+  def initialize(arg, options = {})
+    if ThinkingSphinx.respond_to?(:context) # Thinking Sphinx v2
+      @index    = arg
+    else # Thinking Sphinx v3
+      @adapter  = arg
+    end
+    @column     = options.delete(:column)    || :updated_at
+    @threshold  = options.delete(:threshold) || 1.day
   end
 
   # Does absolutely nothing, beyond returning true. Thinking Sphinx expects
@@ -54,37 +61,49 @@ class ThinkingSphinx::Deltas::DatetimeDelta < ThinkingSphinx::Deltas::DefaultDel
   #
   # All the real indexing logic is done by the delayed_index method.
   #
-  # @param [Class] model the ActiveRecord model to index.
-  # @param [ActiveRecord::Base] instance the instance of the given model that
-  #   has changed. Optional.
-  # @return [Boolean] true
-  # @see #delayed_index
-  #
-  def index(model, instance = nil)
+  def index(arg, instance=nil)
     # do nothing
     true
   end
 
-  # Processes the delta index for the given model, and then merges the relevant
+  # Processes the given delta index, and then merges the relevant
   # core and delta indexes together. By default, the output of these indexer
   # commands are printed to stdout. If you'd rather it didn't, set
-  # ThinkingSphinx.suppress_delta_output to true.
+  # config.settings['quiet_deltas'] to true.
   #
-  # @param [Class] model the ActiveRecord model to index
+  # @param arg Depending on the version of Thinking Sphinx
+  #   For TS v2: the ActiveRecord model to index
+  #   For TS v3: the delta index to index
   # @return [Boolean] true
   #
-  def delayed_index(model)
+  def delayed_index(arg)
     config = ThinkingSphinx::Configuration.instance
-    rotate = ThinkingSphinx.sphinx_running? ? " --rotate" : ""
+    if ThinkingSphinx.respond_to?(:context) # Thinking Sphinx v2
+      model = arg
+      rotate = ThinkingSphinx.sphinx_running? ? " --rotate" : ""
+      output = `#{config.bin_path}#{config.indexer_binary_name} --config #{config.config_file}#{rotate} #{model.delta_index_names.join(' ')}`
 
-    output = `#{config.bin_path}#{config.indexer_binary_name} --config #{config.config_file}#{rotate} #{model.delta_index_names.join(' ')}`
+      model.sphinx_indexes.select(&:delta?).each do |index|
+        output += `#{config.bin_path}#{config.indexer_binary_name} --config #{config.config_file}#{rotate} --merge #{index.core_name} #{index.delta_name} --merge-dst-range sphinx_deleted 0 0`
+      end unless ENV['DISABLE_MERGE'] == 'true'
 
+      puts output unless ThinkingSphinx.suppress_delta_output?
+    else # Thinking Sphinx v3
+      delta_index = arg
+      controller = config.controller
+      output = controller.index(delta_index.name)
+      output = "" unless output.is_a?(String) # Riddle::Controller.index may return true, false, nil or String, depending on its options[:verbose] value
+      rotate = (controller.running? ? ' --rotate' : '')
 
-    model.sphinx_indexes.select(&:delta?).each do |index|
-      output += `#{config.bin_path}#{config.indexer_binary_name} --config #{config.config_file}#{rotate} --merge #{index.core_name} #{index.delta_name} --merge-dst-range sphinx_deleted 0 0`
-    end unless ENV['DISABLE_MERGE'] == 'true'
+      unless(ENV['DISABLE_MERGE'] == 'true')
+        core_index = config.indices.select{|idx|idx.reference == delta_index.reference && idx.delta? == false}.first
+        if (core_index)
+          output += `#{controller.bin_path}#{controller.indexer_binary_name} --config #{config.configuration_file}#{rotate} --merge #{core_index.name} #{delta_index.name} --merge-dst-range sphinx_deleted 0 0`
+        end
+      end
 
-    puts output unless ThinkingSphinx.suppress_delta_output?
+      puts output unless config.settings['quiet_deltas']
+    end
 
     true
   end
@@ -106,18 +125,18 @@ class ThinkingSphinx::Deltas::DatetimeDelta < ThinkingSphinx::Deltas::DefaultDel
   # @param [ActiveRecord::Base] instance the instance to check
   # @return [Boolean] True if within the threshold window, otherwise false.
   #
-  def toggled(instance)
+  def toggled?(instance)
     res = instance.send(@column)
     res && (res > @threshold.ago)
   end
+  alias_method :toggled, :toggled?
 
   # Returns the SQL query that resets the model data after a normal index. For
   # datetime deltas, nothing needs to be done, so this method returns nil.
   #
-  # @param [Class] model The ActiveRecord model that is requesting the query
   # @return [NilClass] Always nil
   #
-  def reset_query(model)
+  def reset_query(model=nil)
     nil
   end
 
@@ -127,17 +146,26 @@ class ThinkingSphinx::Deltas::DatetimeDelta < ThinkingSphinx::Deltas::DefaultDel
   # delta column being within the threshold. In the latter's case, no condition
   # is needed, so nil is returned.
   #
-  # @param [Class] model The ActiveRecord model to generate the SQL condition
-  #   for.
-  # @param [Boolean] toggled Whether the query should request delta documents or
-  #   all documents.
-  # @return [String, NilClass] The SQL condition if the toggled version is
-  #   requested, otherwise nil.
-  #
-  def clause(model, toggled)
-    if toggled
-      "#{model.quoted_table_name}.#{model.connection.quote_column_name(@column.to_s)}" +
-      " > #{adapter.time_difference(@threshold)}"
+  # @param args Depends on version of Thinking Sphinx:
+  #   For ThinkingSphinx v2 this should be: def clause(model, is_delta)
+  #   For ThinkingSphinx v3 this should be: def clause(is_delta=false)
+  # @param [Class]   model:    The ActiveRecord model for which the clause is for
+  # @param [Boolean] is_delta: Whether the clause is for the core or delta index
+  # @return [String, NilClass] The SQL condition if the is_delta is true,
+  #   otherwise nil
+  def clause(*args)
+    model    = (args.length >= 2 ? args[0] : nil)
+    is_delta = (args.length >= 2 ? args[1] : args[0]) || false
+
+    table_name  = (model.nil? ? adapter.quoted_table_name   : model.quoted_table_name)
+    column_name = (model.nil? ? adapter.quote(@column.to_s) : model.connection.quote_column_name(@column.to_s))
+
+    if (is_delta)
+      if (adapter.respond_to?(:time_difference))
+        "#{table_name}.#{column_name} > #{adapter.time_difference(@threshold)}"
+      else
+        "#{table_name}.#{column_name} > DATE_SUB(NOW(), INTERVAL #{@threshold} SECOND)"
+      end
     else
       nil
     end

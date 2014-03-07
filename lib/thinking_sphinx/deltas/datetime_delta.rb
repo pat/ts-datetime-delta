@@ -51,8 +51,8 @@ class ThinkingSphinx::Deltas::DatetimeDelta < ThinkingSphinx::Deltas::DefaultDel
     else # Thinking Sphinx v3
       @adapter  = arg
     end
-    @column     = options.delete(:column)    || :updated_at
-    @threshold  = options.delete(:threshold) || 1.day
+    @column     = options[:column]    || :updated_at
+    @threshold  = options[:threshold] || 1.day
   end
 
   # Does absolutely nothing, beyond returning true. Thinking Sphinx expects

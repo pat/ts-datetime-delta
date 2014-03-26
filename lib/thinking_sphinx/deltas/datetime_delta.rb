@@ -160,11 +160,13 @@ class ThinkingSphinx::Deltas::DatetimeDelta < ThinkingSphinx::Deltas::DefaultDel
     table_name  = (model.nil? ? adapter.quoted_table_name   : model.quoted_table_name)
     column_name = (model.nil? ? adapter.quote(@column.to_s) : model.connection.quote_column_name(@column.to_s))
 
-    if (is_delta)
-      if (adapter.respond_to?(:time_difference))
-        "#{table_name}.#{column_name} > #{adapter.time_difference(@threshold)}"
-      else
+    if is_delta
+      if adapter.class.name.downcase[/postgres/]
+        "#{table_name}.#{column_name} > current_timestamp - interval '#{@threshold} seconds'"
+      elsif adapter.class.name.downcase[/mysql/]
         "#{table_name}.#{column_name} > DATE_SUB(NOW(), INTERVAL #{@threshold} SECOND)"
+      else
+        raise 'Unknown adapter type.'
       end
     else
       nil

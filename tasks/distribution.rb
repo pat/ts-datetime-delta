@@ -10,6 +10,7 @@ Jeweler::Tasks.new do |gem|
   gem.email       = "pat@freelancing-gods.com"
   gem.homepage    = "http://github.com/freelancing-god/ts-datetime-delta"
   gem.authors     = ["Pat Allan"]
+  gem.license     = 'MIT'
 
   gem.add_dependency 'thinking-sphinx', '>= 1.3.8'
 

@@ -2,20 +2,20 @@ h1. Datetime Deltas for Thinking Sphinx
 
 h2. Installation
 
-You'll need Thinking Sphinx 1.3.0 or later.
+You'll need Thinking Sphinx 1.3.0 or later (v3 is now supported since the 2.0.0 release of this gem).
 
 <pre><code>gem install ts-datetime-delta</code></pre>
 
 In your Gemfile, you can use it like so:
 
-<pre><code>gem 'ts-datetime-delta', '~> 1.0.2',
+<pre><code>gem 'ts-datetime-delta', '~> 2.0.0',
   :require => 'thinking_sphinx/deltas/datetime_delta'</code></pre>
 
 Or if you're still on Rails 2, then put this in your @environment.rb@ file with the rest of your gem dependencies:
 
 <pre><code>config.gem 'ts-datetime-delta',
   :lib     => 'thinking_sphinx/deltas/datetime_delta'
-  :version => '>= 1.0.0'</code></pre>
+  :version => '>= 2.0.0'</code></pre>
 
 No matter which version of Rails, you'll need to add the following line to the bottom of your @Rakefile@:
 

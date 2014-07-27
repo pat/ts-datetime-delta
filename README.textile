@@ -23,7 +23,16 @@ No matter which version of Rails, you'll need to add the following line to the b
 
 h2. Usage
 
-For the indexes you want to use this delta approach, make sure you set that up in their @define_index@ blocks.
+For the indexes you want to use this delta approach, make sure you set that up in your index definition. For Thinking Sphinx v3, that'll look like this:
+
+<pre><code>ThinkingSphinx::Index.define(:book,
+  :with  => :active_record,
+  :delta => ThinkingSphinx::Deltas::DatetimeDelta
+) do
+  # ...
+end</code></pre>
+
+But for Thinking Sphinx v1/v2, it belongs within your @define_index@ blocks:
 
 <pre><code>define_index do
   # ...
@@ -32,6 +41,18 @@ For the indexes you want to use this delta approach, make sure you set that up i
 end</code></pre>
 
 If you want to use a column other than @updated_at@, you can specify it using the @:delta_column@ option. The same goes for the threshold, which defaults to one day.
+
+Again, Thinking Sphinx v3 expects these options outside the block:
+
+<pre><code>ThinkingSphinx::Index.define(:book,
+  :with          => :active_record,
+  :delta         => ThinkingSphinx::Deltas::DatetimeDelta,
+  :delta_options => {:threshold => 1.hour, :delta_column => :changed_at}
+) do
+  # ...
+end</code></pre>
+
+But Thinking Sphinx v1/v2 it goes within the @define_index@ block:
 
 <pre><code>set_property :delta => :datetime,
   :threshold    => 1.hour,
@@ -53,7 +74,9 @@ h2. Contributors
 
 * "W. Andrew Loe III":http://andrewloe.com/ - Environment variable for disabling merging.
 * "Kirill Maximov":http://kirblog.idetalk.com - Handling nil timestamp column values for toggled checks.
+* "Timo Virkkala":https://github.com/weetu - Thinking Sphinx v3 compatibility,fix for null timestamps.
+* "Cedric Maion":https://github.com/cmaion - Fix for keeping custom options persisted.
 
 h2. Copyright
 
-Copyright (c) 2009-2012 Pat Allan, and released under an MIT Licence.
+Copyright (c) 2009-2014 Pat Allan, and released under an MIT Licence.

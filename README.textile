@@ -40,14 +40,14 @@ But for Thinking Sphinx v1/v2, it belongs within your @define_index@ blocks:
   set_property :delta => :datetime
 end</code></pre>
 
-If you want to use a column other than @updated_at@, you can specify it using the @:delta_column@ option. The same goes for the threshold, which defaults to one day.
+If you want to use a column other than @updated_at@, you can specify it using the @:column@ option. The same goes for the threshold, which defaults to one day.
 
 Again, Thinking Sphinx v3 expects these options outside the block:
 
 <pre><code>ThinkingSphinx::Index.define(:book,
   :with          => :active_record,
   :delta         => ThinkingSphinx::Deltas::DatetimeDelta,
-  :delta_options => {:threshold => 1.hour, :delta_column => :changed_at}
+  :delta_options => {:threshold => 1.hour, :column => :changed_at}
 ) do
   # ...
 end</code></pre>
@@ -56,7 +56,7 @@ But Thinking Sphinx v1/v2 it goes within the @define_index@ block:
 
 <pre><code>set_property :delta => :datetime,
   :threshold    => 1.hour,
-  :delta_column => :changed_at</code></pre>
+  :column => :changed_at</code></pre>
 
 Then, while your Rails application is running, you'll need to run the delta indexing rake task regularly - as often as your threshold, allowing for some time for the indexing to actually happen.
 

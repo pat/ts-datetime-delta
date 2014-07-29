@@ -56,7 +56,7 @@ But Thinking Sphinx v1/v2 it goes within the @define_index@ block:
 
 <pre><code>set_property :delta => :datetime,
   :threshold    => 1.hour,
-  :delta_column => :changed_at</code></pre>
+  :column => :changed_at</code></pre>
 
 Then, while your Rails application is running, you'll need to run the delta indexing rake task regularly - as often as your threshold, allowing for some time for the indexing to actually happen.
 

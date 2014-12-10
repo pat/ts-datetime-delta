@@ -13,7 +13,7 @@ class ThinkingSphinx::Deltas::DatetimeDelta < ThinkingSphinx::Deltas::DefaultDel
   attr_reader :adapter
 
   def self.index
-    if ThinkingSphinx.respond_to?(:context) # Thinking Sphinx v2
+    if thinking_sphinx_v2?
       ThinkingSphinx.context.indexed_models.collect { |model|
         model.constantize
       }.select { |model|
@@ -39,6 +39,10 @@ class ThinkingSphinx::Deltas::DatetimeDelta < ThinkingSphinx::Deltas::DefaultDel
     end
   end
 
+  def self.thinking_sphinx_v2?
+    ThinkingSphinx.respond_to?(:sphinx_pid)
+  end
+
   # Initialises the Delta object for the given index and settings. All handled
   # by Thinking Sphinx, so you shouldn't need to call this method yourself in
   # general day-to-day situations.
@@ -46,7 +50,7 @@ class ThinkingSphinx::Deltas::DatetimeDelta < ThinkingSphinx::Deltas::DefaultDel
   #   For TS v2: the index
   #   For TS v3: the database adapter
   def initialize(arg, options = {})
-    if ThinkingSphinx.respond_to?(:context) # Thinking Sphinx v2
+    if self.class.thinking_sphinx_v2?
       @index    = arg
     else # Thinking Sphinx v3
       @adapter  = arg
@@ -78,7 +82,7 @@ class ThinkingSphinx::Deltas::DatetimeDelta < ThinkingSphinx::Deltas::DefaultDel
   #
   def delayed_index(arg)
     config = ThinkingSphinx::Configuration.instance
-    if ThinkingSphinx.respond_to?(:context) # Thinking Sphinx v2
+    if self.class.thinking_sphinx_v2?
       model = arg
       rotate = ThinkingSphinx.sphinx_running? ? " --rotate" : ""
       output = `#{config.bin_path}#{config.indexer_binary_name} --config #{config.config_file}#{rotate} #{model.delta_index_names.join(' ')}`

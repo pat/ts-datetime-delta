@@ -59,6 +59,13 @@ class ThinkingSphinx::Deltas::DatetimeDelta < ThinkingSphinx::Deltas::DefaultDel
     @threshold  = options[:threshold] || 1.day
   end
 
+  # Don't remove records from the core index - we want them to stick around.
+  #
+  def delete(index, instance)
+    # do nothing
+    true
+  end
+
   # Does absolutely nothing, beyond returning true. Thinking Sphinx expects
   # this method, though, and we don't want to use the inherited behaviour from
   # DefaultDelta.
